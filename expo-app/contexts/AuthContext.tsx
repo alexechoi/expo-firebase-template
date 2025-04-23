@@ -4,6 +4,7 @@ import { auth, db } from '../lib/firebase';
 import { doc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { storage } from '../lib/firebase';
+import logger from '@/utils/logger';
 
 interface AuthContextType {
   user: User | null;
@@ -74,7 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setProfileImageUrl(url);
       } catch (error) {
         // Image might not exist yet, which is fine
-        console.log('No profile image found');
+        logger.info('No profile image found');
         setProfileImageUrl(null);
       }
     };
