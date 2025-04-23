@@ -45,7 +45,7 @@ export default function Index() {
         <Text style={styles.buttonText}>Login</Text>
       </TouchableOpacity>
       
-      <TouchableOpacity onPress={() => router.push('/signup')}>
+      <TouchableOpacity onPress={() => router.push('/(unauthenticated)/auth/signup')}>
         <Text style={styles.link}>Don't have an account? Sign up</Text>
       </TouchableOpacity>
     </View>
