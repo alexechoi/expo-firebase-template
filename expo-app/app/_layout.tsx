@@ -1,7 +1,7 @@
 import { RelativePathString, Stack } from "expo-router";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { useEffect } from "react";
-import { SafeAreaView } from 'react-native';
+import { SafeAreaView } from "react-native";
 import { useRouter } from "expo-router";
 
 export default function RootLayout() {
@@ -24,9 +24,9 @@ function Main() {
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
-      <Stack>
-        <Stack.Screen name="(authenticated)" options={{ headerShown: false }} />
-        <Stack.Screen name="(unauthenticated)" options={{ headerShown: false }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="(authenticated)" />
+        <Stack.Screen name="(unauthenticated)" />
       </Stack>
     </SafeAreaView>
   );
