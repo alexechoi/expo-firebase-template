@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { RelativePathString, Stack } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useEffect } from "react";
 import { useRouter } from "expo-router";
@@ -10,7 +10,7 @@ export default function UnauthenticatedLayout() {
   useEffect(() => {
     if (!loading && user) {
       // Redirect to authenticated home if user is logged in
-      router.replace('/(authenticated)/home');
+      router.replace("/(authenticated)/home" as unknown as RelativePathString);
     }
   }, [user, loading]);
 
@@ -20,4 +20,4 @@ export default function UnauthenticatedLayout() {
       <Stack.Screen name="auth" options={{ headerShown: false }} />
     </Stack>
   );
-} 
+}
