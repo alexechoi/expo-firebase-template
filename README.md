@@ -17,6 +17,7 @@ Base template for an Expo, React Native, FastAPI, and Firebase project.
 - Node.js (version 14 or later)
 - Python (version 3.11 or later)
 - Expo CLI
+- Docker (optional, for running the API in a container)
 
 ### Installation
 
@@ -40,6 +41,42 @@ Base template for an Expo, React Native, FastAPI, and Firebase project.
    cd api
    pip install -r requirements.txt
    ```
+
+### Running the API
+
+You can run the FastAPI backend either directly or using Docker.
+
+#### Option 1: Running Directly
+
+1. Navigate to the `api` directory:
+
+   ```bash
+   cd api
+   ```
+
+2. Run the FastAPI application:
+
+   ```bash
+   uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+   ```
+
+3. Access the API at `http://localhost:8000`.
+
+#### Option 2: Running with Docker
+
+1. Build the Docker image:
+
+   ```bash
+   docker build -t my-fastapi-app .
+   ```
+
+2. Run the Docker container:
+
+   ```bash
+   docker run -d -p 8000:8000 my-fastapi-app
+   ```
+
+3. Access the API at `http://localhost:8000`.
 
 ### Environment Variables
 
