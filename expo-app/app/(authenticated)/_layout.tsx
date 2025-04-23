@@ -2,7 +2,7 @@ import { Tabs } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useEffect } from "react";
 import { useRouter, RelativePathString } from "expo-router";
-import { Ionicons } from '@expo/vector-icons';
+import { Ionicons } from "@expo/vector-icons";
 
 export default function AuthenticatedLayout() {
   const { user, loading } = useAuth();
@@ -11,17 +11,25 @@ export default function AuthenticatedLayout() {
   useEffect(() => {
     if (!loading && !user) {
       // Redirect to login if user is not authenticated
-      router.replace('/(unauthenticated)/login' as unknown as RelativePathString);
+      router.replace(
+        "/(unauthenticated)/login" as unknown as RelativePathString
+      );
     }
   }, [user, loading]);
 
   return (
-    <Tabs screenOptions={{
-      tabBarActiveTintColor: '#007AFF',
-      tabBarInactiveTintColor: 'gray',
-      headerShown: false,
-    }}>
-      <Tabs.Screen 
+    <Tabs
+      screenOptions={{
+        tabBarActiveTintColor: "#007AFF",
+        tabBarInactiveTintColor: "gray",
+        headerShown: false,
+        tabBarStyle: {
+          paddingBottom: 0,
+          height: 50,
+        },
+      }}
+    >
+      <Tabs.Screen
         name="(tabs)/home"
         options={{
           title: "Home",
@@ -30,7 +38,7 @@ export default function AuthenticatedLayout() {
           ),
         }}
       />
-      <Tabs.Screen 
+      <Tabs.Screen
         name="(tabs)/profile"
         options={{
           title: "Profile",
@@ -39,7 +47,7 @@ export default function AuthenticatedLayout() {
           ),
         }}
       />
-      <Tabs.Screen 
+      <Tabs.Screen
         name="(tabs)/settings"
         options={{
           title: "Settings",
@@ -50,4 +58,4 @@ export default function AuthenticatedLayout() {
       />
     </Tabs>
   );
-} 
+}
