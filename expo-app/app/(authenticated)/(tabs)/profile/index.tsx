@@ -10,6 +10,8 @@ import { useRouter } from "expo-router";
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../../../../lib/firebase";
+import logger from "@/utils/logger";
+import React from "react";
 
 export default function Profile() {
   const { user, signOut } = useAuth();
@@ -25,7 +27,7 @@ export default function Profile() {
         if (userDoc.exists()) {
           setUserData(userDoc.data() as any);
         } else {
-          console.log("No such document!");
+          logger.error("No such document!");
         }
       }
       setLoading(false);
@@ -39,7 +41,7 @@ export default function Profile() {
       await signOut();
       router.replace("/");
     } catch (error) {
-      console.error("Error signing out:", error);
+      logger.error("Error signing out:", error);
     }
   };
 

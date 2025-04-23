@@ -2,6 +2,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { RelativePathString, useRouter } from 'expo-router';
 import { api } from '../../../../lib/api';
 import { useState } from 'react';
+import logger from '../../../../utils/logger';
 
 export default function Home() {
   const router = useRouter();
@@ -15,7 +16,7 @@ export default function Home() {
       setError('');
     } catch (err) {
       setError('Failed to connect to API');
-      console.error('API Error:', err);
+      logger.error(err, 'API Error');
     }
   };
 
