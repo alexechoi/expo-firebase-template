@@ -1,7 +1,8 @@
-import { RelativePathString, Stack } from "expo-router";
+import { Tabs } from "expo-router";
 import { useAuth } from "../../contexts/AuthContext";
 import { useEffect } from "react";
-import { useRouter } from "expo-router";
+import { useRouter, RelativePathString } from "expo-router";
+import { Ionicons } from '@expo/vector-icons';
 
 export default function AuthenticatedLayout() {
   const { user, loading } = useAuth();
@@ -15,9 +16,38 @@ export default function AuthenticatedLayout() {
   }, [user, loading]);
 
   return (
-    <Stack>
-      <Stack.Screen name="home" options={{ title: "Home", headerShown: false }} />
-      <Stack.Screen name="profile" options={{ title: "Profile", headerShown: false }} />
-    </Stack>
+    <Tabs screenOptions={{
+      tabBarActiveTintColor: '#007AFF',
+      tabBarInactiveTintColor: 'gray',
+      headerShown: false,
+    }}>
+      <Tabs.Screen 
+        name="(tabs)/home"
+        options={{
+          title: "Home",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="home" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen 
+        name="(tabs)/profile"
+        options={{
+          title: "Profile",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="person" size={size} color={color} />
+          ),
+        }}
+      />
+      <Tabs.Screen 
+        name="(tabs)/settings"
+        options={{
+          title: "Settings",
+          tabBarIcon: ({ color, size }) => (
+            <Ionicons name="settings" size={size} color={color} />
+          ),
+        }}
+      />
+    </Tabs>
   );
 } 

@@ -1,5 +1,5 @@
 import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
-import { useRouter } from 'expo-router';
+import { RelativePathString, useRouter } from 'expo-router';
 
 export default function Home() {
   const router = useRouter();
@@ -9,7 +9,7 @@ export default function Home() {
       <Text style={styles.title}>Welcome Home</Text>
       <TouchableOpacity 
         style={styles.button} 
-        onPress={() => router.push('/(authenticated)/profile')}
+        onPress={() => router.push('/(authenticated)/(tabs)/profile' as unknown as RelativePathString)}
       >
         <Text style={styles.buttonText}>View Profile</Text>
       </TouchableOpacity>
