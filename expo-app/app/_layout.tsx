@@ -1,4 +1,4 @@
-import { Stack } from "expo-router";
+import { RelativePathString, Stack } from "expo-router";
 import { AuthProvider, useAuth } from "../contexts/AuthContext";
 import { useEffect } from "react";
 import { SafeAreaView } from 'react-native';
@@ -18,17 +18,15 @@ function Main() {
 
   useEffect(() => {
     if (!loading && user) {
-      // Redirect to Profile if user is logged in
-      router.replace('/profile');
+      router.replace("/(authenticated)/home" as unknown as RelativePathString);
     }
   }, [user, loading]);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
       <Stack>
-        <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="signup" options={{ title: "Sign Up", headerShown: false }} />
-        <Stack.Screen name="profile" options={{ title: "Profile", headerShown: false }} />
+        <Stack.Screen name="(authenticated)" options={{ headerShown: false }} />
+        <Stack.Screen name="(unauthenticated)" options={{ headerShown: false }} />
       </Stack>
     </SafeAreaView>
   );
