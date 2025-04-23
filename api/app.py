@@ -25,8 +25,3 @@ async def read_root(token_data: dict = Depends(verify_token)):
 async def read_item(item_id: int, q: str = None, token_data: dict = Depends(verify_token)):
     logger.info(f"Item endpoint accessed with item_id: {item_id} and query: {q}")
     return {"item_id": item_id, "query": q, "user": token_data}
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
-
