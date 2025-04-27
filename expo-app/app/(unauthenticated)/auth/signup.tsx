@@ -6,6 +6,8 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Platform,
+  Image,
 } from "react-native";
 import { useRouter } from "expo-router";
 import * as WebBrowser from "expo-web-browser";
@@ -15,11 +17,14 @@ import {
   getAuth,
   GoogleAuthProvider,
   signInWithCredential,
+  onAuthStateChanged,
 } from "firebase/auth";
 import { auth } from "../../../lib/firebase";
 import { useAuth } from "../../../contexts/AuthContext";
-import { ResponseType } from "expo-auth-session";
+import { ResponseType, makeRedirectUri } from "expo-auth-session";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
+// Ensures browser auth completion happens correctly
 WebBrowser.maybeCompleteAuthSession();
 
 export default function Signup() {
@@ -34,28 +39,49 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [marketingConsent, setMarketingConsent] = useState(false);
   const [privacyPolicy, setPrivacyPolicy] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const router = useRouter();
   const { createUserDocument } = useAuth();
   const firebaseAuth = getAuth();
 
-  // Configure Google auth request
+  console.log(process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID);
+  console.log(process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID);
+  console.log(process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID);
+
+  // Configure Google auth request with web-client approach
   const [request, response, promptAsync] = Google.useAuthRequest({
-    clientId: process.env.EXPO_GOOGLE_WEB_CLIENT_ID,
-    iosClientId: process.env.EXPO_GOOGLE_IOS_CLIENT_ID,
-    androidClientId: process.env.EXPO_GOOGLE_ANDROID_CLIENT_ID,
+    clientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID, // Web client ID for Expo Go
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+    iosClientId: process.env.EXPO_PUBLIC_GOOGLE_IOS_CLIENT_ID,
+    androidClientId: process.env.EXPO_PUBLIC_GOOGLE_ANDROID_CLIENT_ID,
     responseType: ResponseType.IdToken,
     scopes: ["profile", "email"],
+    redirectUri: makeRedirectUri({
+      scheme: process.env.EXPO_SCHEME || 'com.yourapp',
+      path: 'auth/signup',
+    }),
   });
 
   // Handle Google sign-in response
   useEffect(() => {
-    if (response?.type === "success" && response.authentication?.idToken) {
-      const { idToken } = response.authentication;
-      const credential = GoogleAuthProvider.credential(idToken);
-      signInWithCredential(firebaseAuth, credential)
-        .then(async ({ user }) => {
-          // Create Firestore document for new Google user if not exists
+    const handleGoogleResponse = async () => {
+      try {
+        if (response?.type === "success" && response.authentication?.idToken) {
+          setIsLoading(true);
+          
+          // Store the auth token in AsyncStorage for persistence
+          await AsyncStorage.setItem('google_auth_token', response.authentication.idToken);
+          
+          // Create Firebase credential from Google token
+          const { idToken } = response.authentication;
+          const credential = GoogleAuthProvider.credential(idToken);
+          
+          // Sign in to Firebase with the credential
+          const result = await signInWithCredential(firebaseAuth, credential);
+          const { user } = result;
+          
+          // Create or update user document in Firestore
           await createUserDocument({
             email: user.email || "",
             firstName: user.displayName?.split(" ")[0] || "",
@@ -65,16 +91,29 @@ export default function Signup() {
             marketingConsent: false,
             privacyPolicy: true,
           });
+          
           router.replace("/profile");
-        })
-        .catch((err) => console.error("Firebase signIn error", err));
-    }
+        } else if (response?.type === "error") {
+          setError("Google sign-in failed. Please try again.");
+        }
+      } catch (err: any) {
+        console.error("Firebase Google sign-in error:", err);
+        setError(err.message || "Failed to sign in with Google");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    handleGoogleResponse();
   }, [response]);
 
   const handleSignup = async () => {
     try {
+      setIsLoading(true);
+      
       if (!privacyPolicy) {
         setError("You must accept the privacy policy");
+        setIsLoading(false);
         return;
       }
 
@@ -92,7 +131,37 @@ export default function Signup() {
 
       router.replace("/profile");
     } catch (error: any) {
+      console.error("Email signup error:", error);
       setError(error.message);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignup = async () => {
+    try {
+      setError("");
+      
+      // Check if we have an existing Google auth token
+      const existingToken = await AsyncStorage.getItem('google_auth_token');
+      if (existingToken) {
+        try {
+          // Try to use the existing token
+          const credential = GoogleAuthProvider.credential(existingToken);
+          await signInWithCredential(firebaseAuth, credential);
+          router.replace("/profile");
+          return;
+        } catch (tokenError) {
+          // Token expired or invalid, clear it and continue with new auth
+          await AsyncStorage.removeItem('google_auth_token');
+        }
+      }
+      
+      // Start Google auth flow
+      await promptAsync();
+    } catch (err: any) {
+      console.error("Error initiating Google sign-in:", err);
+      setError(err.message || "Failed to start Google sign-in");
     }
   };
 
@@ -165,17 +234,31 @@ export default function Signup() {
         <Text>{privacyPolicy ? "☑" : "□"} I accept the privacy policy</Text>
       </TouchableOpacity>
 
-      <TouchableOpacity style={styles.button} onPress={handleSignup}>
-        <Text style={styles.buttonText}>Sign Up</Text>
+      <TouchableOpacity 
+        style={styles.button} 
+        onPress={handleSignup}
+        disabled={isLoading}
+      >
+        <Text style={styles.buttonText}>
+          {isLoading ? "Signing Up..." : "Sign Up"}
+        </Text>
       </TouchableOpacity>
+
+      <View style={styles.separator}>
+        <View style={styles.line} />
+        <Text style={styles.separatorText}>OR</Text>
+        <View style={styles.line} />
+      </View>
 
       {/* Google Sign-In Button */}
       <TouchableOpacity
         style={[styles.button, styles.googleButton]}
-        disabled={!request}
-        onPress={() => promptAsync()}
+        disabled={isLoading}
+        onPress={handleGoogleSignup}
       >
-        <Text style={styles.buttonText}>Sign in with Google</Text>
+        <View style={styles.googleButtonContent}>
+          <Text style={styles.buttonText}>Sign up with Google</Text>
+        </View>
       </TouchableOpacity>
 
       <TouchableOpacity onPress={() => router.back()}>
@@ -216,16 +299,38 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   googleButton: {
-    backgroundColor: "#DB4437",
+    backgroundColor: "#fff",
+    borderWidth: 1,
+    borderColor: "#ddd",
+  },
+  googleButtonContent: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
   },
   buttonText: {
     color: "white",
     textAlign: "center",
     fontWeight: "bold",
   },
+  separator: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginVertical: 15,
+  },
+  line: {
+    flex: 1,
+    height: 1,
+    backgroundColor: "#ddd",
+  },
+  separatorText: {
+    paddingHorizontal: 10,
+    color: "#666",
+  },
   link: {
     color: "#007AFF",
     textAlign: "center",
+    marginTop: 10,
   },
   error: {
     color: "red",
