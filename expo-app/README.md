@@ -35,6 +35,20 @@ npm run reset-project
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
+## Dependencies
+
+This project uses Expo SDK 54 with Firebase integration. The `package.json` includes an `overrides` section to resolve peer dependency conflicts between Firebase and Expo packages:
+
+```json
+"overrides": {
+  "@firebase/auth": {
+    "@react-native-async-storage/async-storage": "$@react-native-async-storage/async-storage"
+  }
+}
+```
+
+This ensures that Firebase Auth uses the same version of `@react-native-async-storage/async-storage` that Expo requires, eliminating the need for `--legacy-peer-deps` when installing dependencies.
+
 ## Learn more
 
 To learn more about developing your project with Expo, look at the following resources:
