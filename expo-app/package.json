@@ -20,7 +20,6 @@
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/native": "^7.0.14",
     "@types/jsonwebtoken": "^9.0.9",
-    "crypto": "^1.0.1",
     "expo": "~54.0.0",
     "expo-blur": "~15.0.7",
     "expo-constants": "~18.0.8",
@@ -64,5 +63,10 @@
     "react-test-renderer": "19.1.0",
     "typescript": "~5.9.2"
   },
-  "private": true
+  "private": true,
+  "overrides": {
+    "@firebase/auth": {
+      "@react-native-async-storage/async-storage": "$@react-native-async-storage/async-storage"
+    }
+  }
 }
